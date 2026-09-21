@@ -1,0 +1,111 @@
+services:
+
+  postgres:
+    image: postgres:16
+
+    container_name: petflow-postgres
+
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: petflow
+      POSTGRES_USER: petflow
+      POSTGRES_PASSWORD: petflow
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+
+  airflow:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: petflow-airflow
+
+    restart: unless-stopped
+
+    depends_on:
+      - postgres
+
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://petflow:petflow@postgres:5432/petflow
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__API__SECRET_KEY: petflow-secret-key
+
+    ports:
+      - "8080:8080"
+
+    volumes:
+      - ./dags:/opt/airflow/dags
+
+    command: >
+      bash -c "
+      airflow db migrate &&
+      airflow users create
+      --username admin
+      --password admin
+      --firstname Pet
+      --lastname Flow
+      --role Admin
+      --email admin@petflow.local || true &&
+      airflow api-server
+      "
+
+
+  airflow-scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: petflow-airflow-scheduler
+
+    restart: unless-stopped
+
+    depends_on:
+      - postgres
+      - airflow
+
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://petflow:petflow@postgres:5432/petflow
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__API__SECRET_KEY: petflow-secret-key
+
+    volumes:
+      - ./dags:/opt/airflow/dags
+
+    command: scheduler
+
+
+  airflow-dag-processor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: petflow-airflow-dag-processor
+
+    restart: unless-stopped
+
+    depends_on:
+      - postgres
+      - airflow
+
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://petflow:petflow@postgres:5432/petflow
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__API__SECRET_KEY: petflow-secret-key
+
+    volumes:
+      - ./dags:/opt/airflow/dags
+
+    command: dag-processor
+
+
+volumes:
+
+  postgres_data:

@@ -1,0 +1,34 @@
+# Python & Ambientes Virtuais
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+
+# Logs e Dados Temporários
+*.log
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Dados Brutos e Processados (Manter ficheiros pesados fora do Git)
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# Backups e Imagens de BD
+*.sql
+petflow_backup.sql
+
+# Variáveis de Ambiente e Segredos
+.env
+.env.local
+
+# Ficheiros do Sistema Operativo e IDEs
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
