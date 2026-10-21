@@ -32,3 +32,12 @@ petflow_backup.sql
 .idea/
 .DS_Store
 Thumbs.db
+
+# Ambiente virtual Python
+.venv/
+venv/
+
+# Cache e arquivos temporários
+__pycache__/
+*.py[cod]
+.pytest_cache/
